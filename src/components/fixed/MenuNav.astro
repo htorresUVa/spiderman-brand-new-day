@@ -107,6 +107,7 @@ const initial = SECTIONS[0].label;
 	import { gsap, ScrollTrigger, prefersReducedMotion } from '@/lib/gsap';
 	import { SECTIONS, type Section } from '@/consts';
 	import { $, $$ } from '@/lib/dom';
+	import { lenis } from '@/lib/lenis';
 
 	const label = $('[data-current-section]');
 	const menu = $('[data-menu]');
@@ -194,7 +195,10 @@ const initial = SECTIONS[0].label;
 				.timeline()
 				.to(main, { autoAlpha: 0, duration: 0.25, ease: 'power1.in' })
 				.add(() => {
-					window.scrollTo(0, top);
+					// Con Lenis activo hay que moverlo a él, no al scroll nativo: si no,
+					// en su próximo frame nos devuelve a su posición anterior.
+					if (lenis) lenis.scrollTo(top, { immediate: true });
+					else window.scrollTo(0, top);
 					// El listener de scroll ya recalcula la sección activa, pero
 					// llega asíncrono; esto deja el indicador bien antes del fade-in.
 					updateCurrentSection();
