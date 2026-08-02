@@ -56,6 +56,7 @@ const embedSrc = `https://www.youtube-nocookie.com/embed/${TRAILER_YOUTUBE.id}?a
 
 <script>
 	import { $ } from '@/lib/dom';
+	import { lenis } from '@/lib/lenis';
 
 	const modal = $<HTMLDialogElement>('[data-trailer-modal]');
 	const frame = modal
@@ -90,6 +91,9 @@ const embedSrc = `https://www.youtube-nocookie.com/embed/${TRAILER_YOUTUBE.id}?a
 		const open = () => {
 			mount();
 			if (!modal.open) modal.showModal();
+			// Con Lenis activo, prevenir el wheel aquí no basta: Lenis escucha en
+			// window y seguiría moviendo el scroll virtual por su cuenta.
+			lenis?.stop();
 			document.addEventListener('wheel', blockBackgroundScroll, {
 				passive: false
 			});
@@ -119,6 +123,7 @@ const embedSrc = `https://www.youtube-nocookie.com/embed/${TRAILER_YOUTUBE.id}?a
 
 		modal.addEventListener('close', () => {
 			unmount();
+			lenis?.start();
 			document.removeEventListener('wheel', blockBackgroundScroll);
 			document.removeEventListener('touchmove', blockBackgroundScroll);
 		});
