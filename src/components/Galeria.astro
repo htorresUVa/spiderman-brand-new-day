@@ -194,6 +194,7 @@ const galleryJson = JSON.stringify(
 	import { gsap, prefersReducedMotion } from '@/lib/gsap'
 	import { $, $$ } from '@/lib/dom'
 	import { createPinnedTiltSection } from '@/lib/tilt'
+	import { lenis } from '@/lib/lenis'
 
 	type GalleryImage = {
 		base: string
@@ -372,7 +373,10 @@ const galleryJson = JSON.stringify(
 				}
 			}
 			// Bloquear rueda/touch del fondo sin tocar overflow del body
-			// (eso reseteaba el scroll con los pins de GSAP).
+			// (eso reseteaba el scroll con los pins de GSAP). Con Lenis activo,
+			// el preventDefault no basta por sí solo: escucha en window y
+			// seguiría moviendo el scroll virtual por su cuenta.
+			lenis?.stop()
 			document.addEventListener('wheel', blockBackgroundScroll, {
 				passive: false
 			})
@@ -401,6 +405,7 @@ const galleryJson = JSON.stringify(
 		})
 
 		lightbox.addEventListener('close', () => {
+			lenis?.start()
 			document.removeEventListener('wheel', blockBackgroundScroll)
 			document.removeEventListener('touchmove', blockBackgroundScroll)
 		})
