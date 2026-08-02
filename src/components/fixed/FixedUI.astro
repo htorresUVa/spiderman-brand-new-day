@@ -34,6 +34,11 @@ import TrailerModal from "@/components/TrailerModal.astro"
   import { gsap } from "@/lib/gsap"
   import { $ } from "@/lib/dom"
   import { onLoadingDone } from "@/lib/loading"
+  import { initLenis } from "@/lib/lenis"
+
+  // El body sigue con overflow-hidden mientras carga: sin overflow no hay
+  // nada que Lenis pueda scrollear, así que es seguro arrancarlo ya.
+  initLenis()
 
   // Nav, logo, CTAs… ocultos hasta que el overlay de loading salga del DOM.
   const ui = $("[data-fixed-ui]")
