@@ -8,6 +8,10 @@ export const TICKETS_URL = 'https://sonypictures.es/pelicula/spiderman-brand-new
 /**
  * Tráilers en YouTube (embed nocookie), uno por vídeo de la sección #videos.
  * Las claves coinciden con los `id` de `VIDEOS` en `data/content.ts`.
+ *
+ * El mapa es heterogéneo a propósito: sólo `trailer-oficial` lleva
+ * `uploadDate`, porque es el único dato que consume el `VideoObject` del
+ * JSON-LD. No se añade al resto de entradas al no tener uso.
  */
 export const TRAILERS_YOUTUBE = {
 	'nuevo-trailer': { id: 'o8EccyRIwQQ', start: 0 },
