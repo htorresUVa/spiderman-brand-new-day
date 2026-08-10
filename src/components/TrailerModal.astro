@@ -98,76 +98,80 @@ const trailers = JSON.stringify(
 
 	type Trailer = { src: string; title: string };
 
-	const trailers = JSON.parse(modal?.dataset.trailers ?? '{}') as Record<
-		string,
-		Trailer
-	>;
-	const defaultKey = modal?.dataset.trailerDefault ?? '';
+	if (modal && frame) {
+		let trailers: Record<string, Trailer> = {};
+		try {
+			trailers = JSON.parse(modal.dataset.trailers ?? '{}');
+		} catch {
+			trailers = {};
+		}
+		const defaultKey = modal.dataset.trailerDefault ?? '';
 
-	if (modal && frame && Object.keys(trailers).length) {
-		const mount = (src: string, title: string) => {
-			frame.replaceChildren();
-			const iframe = document.createElement('iframe');
-			iframe.src = src;
-			iframe.title = title;
-			iframe.allow =
-				'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
-			iframe.allowFullscreen = true;
-			iframe.referrerPolicy = 'strict-origin-when-cross-origin';
-			frame.append(iframe);
-		};
+		if (Object.keys(trailers).length) {
+			const mount = (src: string, title: string) => {
+				frame.replaceChildren();
+				const iframe = document.createElement('iframe');
+				iframe.src = src;
+				iframe.title = title;
+				iframe.allow =
+					'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+				iframe.allowFullscreen = true;
+				iframe.referrerPolicy = 'strict-origin-when-cross-origin';
+				frame.append(iframe);
+			};
 
-		const unmount = () => {
-			frame.replaceChildren();
-		};
+			const unmount = () => {
+				frame.replaceChildren();
+			};
 
-		const blockBackgroundScroll = (event: Event) => {
-			if (event instanceof WheelEvent && event.ctrlKey) return;
-			if (window.TouchEvent && event instanceof TouchEvent && event.touches.length > 1) return;
-			event.preventDefault();
-		};
+			const blockBackgroundScroll = (event: Event) => {
+				if (event instanceof WheelEvent && event.ctrlKey) return;
+				if (window.TouchEvent && event instanceof TouchEvent && event.touches.length > 1) return;
+				event.preventDefault();
+			};
 
-		const open = (key: string) => {
-			const trailer = trailers[key] ?? trailers[defaultKey];
-			if (!trailer) return;
-			mount(trailer.src, `Tráiler: ${trailer.title}`);
-			if (titleEl) titleEl.textContent = trailer.title;
-			if (!modal.open) modal.showModal();
-			document.addEventListener('wheel', blockBackgroundScroll, {
-				passive: false
+			const open = (key: string) => {
+				const trailer = trailers[key] ?? trailers[defaultKey];
+				if (!trailer) return;
+				mount(trailer.src, `Tráiler: ${trailer.title}`);
+				if (titleEl) titleEl.textContent = trailer.title;
+				if (!modal.open) modal.showModal();
+				document.addEventListener('wheel', blockBackgroundScroll, {
+					passive: false
+				});
+				document.addEventListener('touchmove', blockBackgroundScroll, {
+					passive: false
+				});
+			};
+
+			const close = () => {
+				if (modal.open) modal.close();
+			};
+
+			document.addEventListener('click', (event) => {
+				const trigger = (event.target as Element | null)?.closest(
+					'[data-trailer-open]'
+				);
+				if (!trigger) return;
+				event.preventDefault();
+				open(trigger.getAttribute('data-trailer-open') || defaultKey);
 			});
-			document.addEventListener('touchmove', blockBackgroundScroll, {
-				passive: false
+
+			closeBtn?.addEventListener('click', close);
+
+			modal.addEventListener('click', (event) => {
+				if (event.target === modal) close();
 			});
-		};
 
-		const close = () => {
-			if (modal.open) modal.close();
-		};
+			modal.addEventListener('close', () => {
+				unmount();
+				document.removeEventListener('wheel', blockBackgroundScroll);
+				document.removeEventListener('touchmove', blockBackgroundScroll);
+			});
 
-		document.addEventListener('click', (event) => {
-			const trigger = (event.target as Element | null)?.closest(
-				'[data-trailer-open]'
-			);
-			if (!trigger) return;
-			event.preventDefault();
-			open(trigger.getAttribute('data-trailer-open') || defaultKey);
-		});
-
-		closeBtn?.addEventListener('click', close);
-
-		modal.addEventListener('click', (event) => {
-			if (event.target === modal) close();
-		});
-
-		modal.addEventListener('close', () => {
-			unmount();
-			document.removeEventListener('wheel', blockBackgroundScroll);
-			document.removeEventListener('touchmove', blockBackgroundScroll);
-		});
-
-		document.addEventListener('keydown', (event) => {
-			if (modal.open && isDocumentScrollKey(event)) event.preventDefault();
-		});
+			document.addEventListener('keydown', (event) => {
+				if (modal.open && isDocumentScrollKey(event)) event.preventDefault();
+			});
+		}
 	}
 </script>
